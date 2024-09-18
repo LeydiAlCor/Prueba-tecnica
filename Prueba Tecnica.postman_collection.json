@@ -1,0 +1,319 @@
+{
+	"info": {
+		"_postman_id": "2ef04ef0-a11c-42c8-ab62-6b5a97cbc8c0",
+		"name": "Prueba Tecnica",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "18441502"
+	},
+	"item": [
+		{
+			"name": "Conocer-recursos",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const jsonData = pm.response.json();\r",
+							"\r",
+							"pm.test('Consulta de recurso exitosa', function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"})\r",
+							"\r",
+							"pm.test('Valor de id no sea nulo', function () {\r",
+							"    var id = jsonData[0].id;\r",
+							"    pm.expect(id).to.not.be.null;\r",
+							"});\r",
+							"\r",
+							"pm.test('Validar nombre de recurso no vacio', function () {\r",
+							"     var responseJSON = pm.response.json();\r",
+							"     responseJSON.forEach((resource) => {\r",
+							"            pm.expect(resource.name).not.to.be.null;\r",
+							"     });\r",
+							"});\r",
+							"\r",
+							"// Test to check the response schema\r",
+							"pm.test(\"Response schema is valid\", function () {\r",
+							"  var schema = {\r",
+							"    type: \"object\",\r",
+							"    properties: {\r",
+							"      id: { type: \"number\" },\r",
+							"      name: { type: \"string\" }\r",
+							"    },\r",
+							"    required: [\"id\", \"name\"]\r",
+							"  };\r",
+							"  pm.expect(schema).to.be.an('object');\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/resource1",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"resource1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Crear-Recurso",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const jsonData = pm.response.json();\r",
+							"\r",
+							"pm.test('Creación del recurso es exitosa', function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"var schema = {\r",
+							"    \"items\": {\r",
+							"        \"id\": \"integer\",\r",
+							"        \"name\": \"string\"\r",
+							"    }\r",
+							"};\r",
+							"\r",
+							"pm.test('El esquema de respuesta es correcto', function () {\r",
+							"    pm.expect(schema).to.be.an('object');\r",
+							"});\r",
+							"\r",
+							"pm.test('Valor de id no sea nulo', function () {\r",
+							"    var id = jsonData.id;\r",
+							"    pm.expect(id).to.not.be.null;\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validar nombre de recurso creado\", ()  => {\r",
+							"    const jsonData = pm.response.text(); // Changed from json() to text()\r",
+							"    pm.expect(jsonData).to.include(pm.environment.get(\"resourceName\")); // Fixed 'eql' to 'include'\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Obtener id del recurso creado\", function () {\r",
+							"    var idRec = jsonData.id;\r",
+							"\r",
+							"    pm.environment.set(\"id\", idRec);\r",
+							"    console.info('El id del recurso es: ', idRec);\r",
+							"\r",
+							"    pm.expect(idRec).to.not.be.null;\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Obtener nombre del recurso creado y comprobarlo\", function () {\r",
+							"    const jsonData = pm.response.text(); // Changed from json() to text()\r",
+							"\r",
+							"    pm.expect(jsonData).to.include(pm.environment.get(\"resourceName\")); // Fixed 'eql' to 'include'\r",
+							"\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"//  Declaración de variable general para crear variables\r",
+							"let createVariable = (variableName, pathJson) => {\r",
+							"    pm.environment.unset(variableName);\r",
+							"    pm.environment.set(variableName, pathJson);\r",
+							"}\r",
+							"\r",
+							"let randomDynamicVariables = variable => {\r",
+							"    var dynamicVariables = variable;\r",
+							"    return dynamicVariables;\r",
+							"};\r",
+							"\r",
+							"/* \r",
+							"   Declaracion de variables para generar datos aleatorios\r",
+							"   a utilizar en cada ejecución de los endpoints.\r",
+							"*/\r",
+							"createVariable(\"resourceName\", randomDynamicVariables(pm.variables.replaceIn('{{$randomVerb}}')));"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{password}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{username}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"{{resourceName}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/v1/resource2",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"resource2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Actualizar-recurso",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"//  Declaración de variable general para crear variables\r",
+							"let createVariable = (variableName, pathJson) => {\r",
+							"    pm.environment.unset(variableName);\r",
+							"    pm.environment.set(variableName, pathJson);\r",
+							"}\r",
+							"\r",
+							"let randomDynamicVariables = variable => {\r",
+							"    var dynamicVariables = variable;\r",
+							"    return dynamicVariables;\r",
+							"};\r",
+							"\r",
+							"/* \r",
+							"   Declaracion de variables para generar datos aleatorios\r",
+							"   a utilizar en cada ejecución de los endpoints.\r",
+							"*/\r",
+							"createVariable(\"resourceName2\", randomDynamicVariables(pm.variables.replaceIn('{{$randomVerb}}')));"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Actualizacion de recurso exitosa', function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{password}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{username}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "text"
+					},
+					{
+						"key": "",
+						"value": "",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/api/v1/resource3/1",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"resource3",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Eliminar-recurso",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"\r",
+							"pm.test('Eliminación de recurso exitosa', function () {\r",
+							"    pm.response.to.have.status(204);\r",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/resource4/1",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"resource4",
+						"1"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
